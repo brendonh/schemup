@@ -42,6 +42,8 @@ def upgrade(dbSchema, ormSchema):
      and run them.
     """
 
+    import pprint
+
     paths = [(tableName, upgraders.findUpgradePath(tableName, fromVersion, toVersion))
              for (tableName, fromVersion, toVersion)
              in validator.findMismatches(dbSchema, ormSchema)]
@@ -49,13 +51,14 @@ def upgrade(dbSchema, ormSchema):
     if not paths:
         return
 
+    stepGraph = upgraders.UpgradeStepGraph()
+
     for tableName, path in paths:
-        print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-        print "Upgrading %s" % tableName
-        print "%s => %s" % (path.firstVersion(), path.lastVersion())
-        print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-        path.apply(dbSchema)
-        dbSchema.setSchema(tableName, path.lastVersion(), log=False)
-        dbSchema.printLog()
+        path.addToGraph(stepGraph)
+
+    stepGraph.calculateEdges()
+
+    for upgrader in stepGraph.topologicalSort():
+        upgrader.run(dbSchema)
 
     dbSchema.commit()

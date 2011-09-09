@@ -17,7 +17,7 @@ class PostgresSchema(object):
             cur.execute(query, args)
 
     def flushLog(self):
-        log, self.runlog = self.runLog, []
+        log, self.runLog = self.runLog, []
         return log
 
     def printLog(self):
@@ -64,6 +64,14 @@ class PostgresSchema(object):
             (tableName,))
         
         return u"\n".join(u"|".join(unicode(c) for c in row) for row in cur)
+
+    def getTableVersions(self):
+        cur = self.conn.cursor()
+        cur.execute(
+            "SELECT table_name, version"
+            " FROM schemup_tables"
+            " WHERE is_current = 't'")
+        return cur
 
 
     def getVersionedTableSchemas(self):
