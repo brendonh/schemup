@@ -1,4 +1,4 @@
-from schemup import validator, upgraders
+from schemup import validator, upgraders, errors
 
 def snapshot(dbSchema, ormSchema):
     """
@@ -14,6 +14,7 @@ def snapshot(dbSchema, ormSchema):
     dbSchema.commit()
 
 
+
 def validate(dbSchema, ormSchema):
     """
     Check DB versions against ORM versions, returning mismatches.
@@ -24,14 +25,15 @@ def validate(dbSchema, ormSchema):
     mismatches = validator.findMismatches(dbSchema, ormSchema)
 
     if mismatches:
-        return ('orm', mismatches)
+        raise errors.ORMValidationError(
+            map(errors.ORMValidationMismatch, mismatches))
 
-    schemaMismatches = validator.findSchemaMismatches(dbSchema)
+    schemaMismatches = list(validator.findSchemaMismatches(dbSchema))
     
     if schemaMismatches:
-        return ('schema', schemaMismatches)
+        raise errors.SchemaValidationError(
+            map(errors.SchemaValidationMismatch, schemaMismatches))
 
-    return None
 
 
 def upgrade(dbSchema, ormSchema):
