@@ -22,30 +22,29 @@ class Upgrader(object):
 
         print "Upgrading %s (%s => %s)" % (self.tableName, self.fromVersion, self.toVersion)
         self.upgrader(dbSchema)
-        dbSchema.setSchema(self.tableName, self.toVersion, log=False)
 
     def __repr__(self):
         return "<%s: %s => %s (%s)>" % (
             self.tableName, self.fromVersion, self.toVersion, self.upgrader)
 
 
-def registerUpgrader(tableName, fromVersion, toVersion, upgrader, dependencies=()):
-    if tableName not in registeredUpgraders:
-        registeredUpgraders[tableName] = {}
+def registerUpgrader(upgrader):
 
-    tableUpgraders = registeredUpgraders[tableName]
+    if upgrader.tableName not in registeredUpgraders:
+        registeredUpgraders[upgrader.tableName] = {}
 
-    if fromVersion not in tableUpgraders:
-        tableUpgraders[fromVersion] = {}
+    tableUpgraders = registeredUpgraders[upgrader.tableName]
 
-    versionUpgraders = tableUpgraders[fromVersion]
+    if upgrader.fromVersion not in tableUpgraders:
+        tableUpgraders[upgrader.fromVersion] = {}
 
-    if toVersion in versionUpgraders:
+    versionUpgraders = tableUpgraders[upgrader.fromVersion]
+
+    if upgrader.toVersion in versionUpgraders:
         raise ValueError("Upgrader already exists for %s (%s => %s)" % (
-                tableName, fromVersion, toVersion))
+                upgrader.tableName, upgrader.fromVersion, upgrader.toVersion))
 
-    versionUpgraders[toVersion] = Upgrader(
-        tableName, fromVersion, toVersion, upgrader, dependencies)
+    versionUpgraders[upgrader.toVersion] = upgrader
 
 
 def upgrader(tableName, fromVersion, toVersion, dependencies=()):
@@ -53,7 +52,8 @@ def upgrader(tableName, fromVersion, toVersion, dependencies=()):
     Decorator shortcut for registerUpgrader
     """
     def decorate(function):
-        registerUpgrader(tableName, fromVersion, toVersion, function, dependencies)
+        upgrader = Upgrader(tableName, fromVersion, toVersion, function, dependencies)
+        registerUpgrader(upgrader)
         return function
 
     return decorate

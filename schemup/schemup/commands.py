@@ -57,8 +57,17 @@ def upgrade(dbSchema, ormSchema):
 
     dbSchema.begin()
 
+    modifiedTables = []
+
     for upgrader in stepGraph.topologicalSort():
         upgrader.run(dbSchema)
+        if upgrader.upgrader is not None:
+            modifiedTables.append((upgrader.tableName, upgrader.toVersion))
+
+    dbSchema.commit()
+
+    for tableName, version in modifiedTables:
+        dbSchema.setSchema(tableName, version)
 
     dbSchema.commit()
 
