@@ -20,13 +20,9 @@ class Upgrader(object):
         if self.upgrader is None:
             return
 
-        print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-        print "Upgrading %s" % self.tableName
-        print "%s => %s" % (self.fromVersion, self.toVersion)
+        print "Upgrading %s (%s => %s)" % (self.tableName, self.fromVersion, self.toVersion)
         self.upgrader(dbSchema)
         dbSchema.setSchema(self.tableName, self.toVersion, log=False)
-        dbSchema.printLog()
-
 
     def __repr__(self):
         return "<%s: %s => %s (%s)>" % (
@@ -65,18 +61,20 @@ def upgrader(tableName, fromVersion, toVersion, dependencies=()):
 
 # ------------------------------------------------------------
 
+def pathToCurrent(tableName, currentVersion):
+    path = UpgradePath([])
+    for upgrader in findUpgradePath(tableName, None, currentVersion).steps:
+        stubUpgrader = upgrader.copy()
+        stubUpgrader.upgrader = None
+        path.push(stubUpgrader)
+    return path
+
+
 def findUpgradePath(tableName, fromVersion, toVersion):
     upgraders = registeredUpgraders.get(tableName, {})
 
-    initialPath = UpgradePath([])
-
-    if fromVersion is None:
-        initialPath.push(Upgrader(tableName, None, fromVersion, None))
-    else:
-        for upgrader in findUpgradePath(tableName, None, fromVersion).steps:
-            stubUpgrader = upgrader.copy()
-            stubUpgrader.upgrader = None
-            initialPath.push(stubUpgrader)
+    stubUpgrader = Upgrader(tableName, None, fromVersion, None)
+    initialPath = UpgradePath([ stubUpgrader ])
 
     paths = deque([ initialPath ])
     

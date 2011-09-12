@@ -24,10 +24,15 @@ class PostgresSchema(object):
         for line in self.flushLog():
             print line
 
+    def begin(self):
+        if self.dryRun:
+            self.runLog.append("START TRANSACTION")
+
     def commit(self):
         if self.dryRun:
-            return
-        self.conn.commit()
+            self.runLog.append("COMMIT")
+        else:
+            self.conn.commit()
 
     def ensureSchemaTable(self):
         cur = self.conn.cursor()

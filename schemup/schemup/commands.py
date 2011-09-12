@@ -1,19 +1,15 @@
-from schemup import validator, upgraders, errors
+from schemup import loaders, validator, upgraders, errors
 
-def snapshot(dbSchema, ormSchema):
+
+def load(dirpath):
     """
-    Write current versions to DB schema table.
-    Used only to initialize schemup on an existing DB
+    Load upgraders from Python or YAML files in the given
+    directory.
     """
+    for dirname, filename, loader in loaders.find(dirpath):
+        loader(dirname, filename)
+
     
-    dbSchema.clearSchemaTable()
-
-    for tableName, version in ormSchema.getExpectedTableVersions():
-        dbSchema.setSchema(tableName, version)
-
-    dbSchema.commit()
-
-
 
 def validate(dbSchema, ormSchema):
     """
@@ -40,9 +36,7 @@ def upgrade(dbSchema, ormSchema):
     """
     Attempt to find upgrade paths for all out-of-sync tables,
      and run them.
-    """
-
-    import pprint
+    """    
 
     paths = [(tableName, upgraders.findUpgradePath(tableName, fromVersion, toVersion))
              for (tableName, fromVersion, toVersion)
@@ -51,6 +45,9 @@ def upgrade(dbSchema, ormSchema):
     if not paths:
         return
 
+    for tableName, currentVersion in dbSchema.getTableVersions():
+        paths.append((tableName, upgraders.pathToCurrent(tableName, currentVersion)))
+
     stepGraph = upgraders.UpgradeStepGraph()
 
     for tableName, path in paths:
@@ -58,7 +55,25 @@ def upgrade(dbSchema, ormSchema):
 
     stepGraph.calculateEdges()
 
+    dbSchema.begin()
+
     for upgrader in stepGraph.topologicalSort():
         upgrader.run(dbSchema)
+
+    dbSchema.commit()
+
+    return dbSchema.flushLog()
+
+
+def snapshot(dbSchema, ormSchema):
+    """
+    Write current versions to DB schema table.
+    Used only to initialize schemup on an existing DB
+    """
+    
+    dbSchema.clearSchemaTable()
+
+    for tableName, version in ormSchema.getExpectedTableVersions():
+        dbSchema.setSchema(tableName, version)
 
     dbSchema.commit()
