@@ -5,7 +5,7 @@ class StormSchema(object):
         self.modelCache = []
 
     def versioned(self, cls):
-        self.modelCache.append((cls.__storm_table__, cls.__version__))
+        self.modelCache.append((cls.__storm_table__, unicode(cls.__version__)))
         return cls
 
     def getExpectedTableVersions(self):
