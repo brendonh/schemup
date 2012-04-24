@@ -11,7 +11,10 @@ class PostgresSchema(object):
             cur = self.conn.cursor()
 
         if log:
-            self.runLog.append(cur.mogrify(query, args))
+            if args:
+                self.runLog.append(cur.mogrify(query, args))
+            else:
+                self.runLog.append(query)
         
         if not self.dryRun:
             cur.execute(query, args)
