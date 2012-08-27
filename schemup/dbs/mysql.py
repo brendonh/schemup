@@ -122,3 +122,48 @@ class MysqlSchema(object):
             " WHERE `is_current` = 1")
 
         return sorted(cur.fetchall())
+
+    @classmethod
+    def _parseColumnSchemaString(self, columnSchema):
+        name, data_type, is_nullable, column_default = columnSchema.split("|")
+        return name, {
+            "data_type": data_type,
+            "is_nullable": is_nullable,
+            "column_default": column_default
+        }
+
+    @classmethod
+    def _parseSchemaString(self, schema):
+        result = {}
+        columnSchemas = schema.split("\n")
+        for c in columnSchemas:
+            name, data = self._parseColumnSchemaString(c)
+            result[name] = data
+        return result
+
+    @classmethod
+    def formatMismatch(self, actualTableSchema, expectedTableSchema):
+        result = []
+        actual = self._parseSchemaString(actualTableSchema)
+        expected = self._parseSchemaString(expectedTableSchema)
+
+        actual_cols = set(actual.keys())
+        expected_cols = set(expected.keys())
+
+        for col in actual_cols.difference(expected_cols):
+            result.append("Column `%s` not expected" % col)
+        for col in expected_cols.difference(actual_cols):
+            result.append("Column `%s` not found" % col)
+
+        for col in (actual_cols.intersection(expected_cols)):
+            actual_data = actual[col]
+            expected_data = expected[col]
+            for attr, msg in (
+                ("data_type"      , "Column `%s`: found %s, expected %s"),
+                ("is_nullable"    , "Column `%s`: nullable %s, expected %s"),
+                ("column_default" , "Column `%s`: default %s, expected %s"),
+            ):
+                if actual_data.get(attr) != expected_data.get(attr):
+                    result.append(msg % (col, actual_data.get(attr), expected_data.get(attr)))
+
+        return "\n".join(result)
