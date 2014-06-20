@@ -64,8 +64,6 @@ def upgrade(dbSchema, ormSchema):
         if upgrader.upgrader is not None:
             modifiedTables.append((upgrader.tableName, upgrader.toVersion))
 
-    dbSchema.commit()
-
     for tableName, version in modifiedTables:
         dbSchema.setSchema(tableName, version)
 

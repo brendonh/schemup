@@ -29,7 +29,7 @@ class PostgresSchema(object):
 
     def begin(self):
         if self.dryRun:
-            self.runLog.append("START TRANSACTION")
+            self.runLog.append("START TRANSACTION ISOLATION LEVEL SERIALIZABLE")
 
     def commit(self):
         if self.dryRun:

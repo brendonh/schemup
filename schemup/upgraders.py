@@ -1,3 +1,4 @@
+import sys
 from collections import deque
 
 # table -> {(from, to) -> function}
@@ -20,7 +21,7 @@ class Upgrader(object):
         if self.upgrader is None:
             return
 
-        print "Upgrading %s (%s => %s)" % (self.tableName, self.fromVersion, self.toVersion)
+        print >>sys.stderr, "Upgrading %s (%s => %s)" % (self.tableName, self.fromVersion, self.toVersion)
         self.upgrader(dbSchema)
 
     def __repr__(self):
