@@ -11,14 +11,12 @@ def find(dirpath):
 
 
 def loadPython(dirname, filename):
-    print >>sys.stderr, "Importing", os.path.join(dirname, filename)
     sys.path.insert(0, dirname)
     __import__(filename.rstrip(".py"))
     sys.path.pop(0)
 
 
 def loadYAML(dirname, filename):
-    print >>sys.stderr, "Importing", os.path.join(dirname, filename)
     blocks = []
     for doc in yaml.load_all(
         open(os.path.join(dirname, filename), 'rb')):
