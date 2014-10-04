@@ -102,7 +102,7 @@ class UpgradePath(object):
 
     def push(self, upgrader):
         if upgrader.toVersion in self.seen:
-            raise ValueError("Upgrader cycle", self.steps, version)
+            raise ValueError("Upgrader cycle", self.steps, upgrader.toVersion)
         self.seen.add(upgrader.toVersion)
         self.steps.append(upgrader)
 
