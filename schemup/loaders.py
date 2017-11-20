@@ -12,7 +12,8 @@ def find(dirpath):
 
 def loadPython(dirname, filename):
     sys.path.insert(0, dirname)
-    __import__(filename.rstrip(".py"))
+    module, _ = os.path.splitext(filename)
+    __import__(module)
     sys.path.pop(0)
 
 
