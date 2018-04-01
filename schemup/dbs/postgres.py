@@ -40,23 +40,11 @@ class PostgresSchema(object):
     def ensureSchemaTable(self):
         cur = self.conn.cursor()
         cur.execute(
-            "SELECT COUNT(*)"
-            " FROM information_schema.tables"
-            " WHERE table_name = 'schemup_tables'")
-        
-        if cur.fetchone()[0]:
-            return
-        
-        print "Creating schema table..."
-        cur.execute(
-            "CREATE TABLE schemup_tables ("
+            "CREATE TABLE IF NOT EXISTS schemup_tables ("
             " table_name VARCHAR NOT NULL,"
             " version VARCHAR NOT NULL,"
             " is_current BOOLEAN NOT NULL DEFAULT 'f',"
             " schema TEXT)")
-        
-        self.conn.commit()
-        
 
     def clearSchemaTable(self):
         self.execute("DELETE FROM schemup_tables")
