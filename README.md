@@ -1,14 +1,15 @@
 # Installation #
-In your terminal (vagrant), do:
-
+Under development environment, you can run the following command to install this package locally.
 ```bash
-cd [repo]/protected/config
-cp db.json.sample db.json
-cd [repo]/protected/schema
-virtualenv env
-. env/bin/activate
-pip install -r requirements.txt
+python setup.py develop
 ```
+
+If you want to run as package via package management tool(like pip), then try to
+1. clone this repo.
+2. (checkout to related commit).
+3. cd target repo.
+4. (remember to activate your python virtualenv).
+5. `pip install -e /path/to/schemup`
 
 Next time, when you want to run schemup:
 
@@ -71,7 +72,7 @@ Keep the map in a json file.
             self.versions = json.load(open(path, "r"))
 
         def getExpectedTableVersions(self):
-            return sorted(self.versions.iteritems())
+            return sorted(self.versions.items())
 
     # Pass this to validate/upgrade commands
     dictSchema = DictSchema("versions.json")
@@ -109,7 +110,7 @@ Mismatches detected by this validation usually means the schema was changed outs
 
     errors = validator.findSchemaMismatches(dbSchema)
     if errors:
-        print "Schema mismatches, was the schema changed outside Schemup?"
+        print("Schema mismatches, was the schema changed outside Schemup?")
 ```
 
 

@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import psycopg2
 
 from schemup.dbs import postgres
@@ -41,10 +43,10 @@ commands.upgrade(postgresSchema, stormSchema)
 validationError = commands.validate(postgresSchema, stormSchema)
 if validationError is not None:
     errorType, errors = validationError
-    print "Validation failed (%s)" % errorType
+    print("Validation failed (%s)" % errorType)
     for (tableName, actual, expected) in errors:
-        print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-        print "Table: %s" % tableName
-        print "- Actual: %s" % actual
-        print "- Expected: %s" % expected
+        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+        print("Table: %s" % tableName)
+        print("- Actual: %s" % actual)
+        print("- Expected: %s" % expected)
     raise SystemExit

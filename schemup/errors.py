@@ -1,5 +1,6 @@
 class ValidationMismatch(object):
-    def __init__(self, (tableName, actual, expected)):
+    def __init__(self, mismatch):
+        (tableName, actual, expected) = mismatch
         self.tableName = tableName
         self.actual = actual
         self.expected = expected

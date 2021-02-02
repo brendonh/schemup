@@ -22,13 +22,13 @@ def validate(dbSchema, ormSchema):
 
     if mismatches:
         raise errors.ORMValidationError(
-            map(errors.ORMValidationMismatch, mismatches))
+            list(map(errors.ORMValidationMismatch, mismatches)))
 
     schemaMismatches = list(validator.findSchemaMismatches(dbSchema))
     
     if schemaMismatches:
         raise errors.SchemaValidationError(
-            map(errors.SchemaValidationMismatch, schemaMismatches))
+            list(map(errors.SchemaValidationMismatch, schemaMismatches)))
 
 
 

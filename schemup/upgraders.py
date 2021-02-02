@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import sys
 from collections import deque
 
@@ -21,7 +23,7 @@ class Upgrader(object):
         if self.upgrader is None:
             return
 
-        print >>sys.stderr, "Upgrading %s (%s => %s)" % (self.tableName, self.fromVersion, self.toVersion)
+        print("Upgrading %s (%s => %s)" % (self.tableName, self.fromVersion, self.toVersion), file=sys.stderr)
         self.upgrader(dbSchema)
 
     def __repr__(self):
@@ -86,7 +88,7 @@ def findUpgradePath(tableName, fromVersion, toVersion):
         if lastVersion == toVersion:
             return path
 
-        for (nextVersion, upgrader) in upgraders.get(lastVersion, {}).iteritems():
+        for (nextVersion, upgrader) in upgraders.get(lastVersion, {}).items():
             paths.append( path.pushNew(upgrader) )
 
     raise ValueError("No upgrade path for %s (%s -> %s)" % (tableName, fromVersion, toVersion))
@@ -140,7 +142,7 @@ class UpgradeStepGraph(object):
         self.nodes[(upgrader.tableName, upgrader.toVersion)] = upgrader
         
     def calculateEdges(self):
-        for fromKey, upgrader in self.nodes.iteritems():
+        for fromKey, upgrader in self.nodes.items():
             if fromKey not in self.edges:
                 self.edges[fromKey] = set()
 
@@ -156,11 +158,11 @@ class UpgradeStepGraph(object):
         edges = self.edges.copy()
         path = []
         while True:
-            freeKeys = set(key for (key, deps) in edges.iteritems() if not deps)
+            freeKeys = set(key for (key, deps) in edges.items() if not deps)
             if not freeKeys:
                 break
             path.extend(freeKeys)
-            edges = dict((key, deps - freeKeys) for (key, deps) in edges.iteritems()
+            edges = dict((key, deps - freeKeys) for (key, deps) in edges.items()
                          if key not in freeKeys)
 
         if edges:
