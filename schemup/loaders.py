@@ -19,7 +19,7 @@ def loadPython(dirname, filename):
 
 def loadYAML(dirname, filename):
     blocks = []
-    for doc in yaml.load_all(
+    for doc in yaml.safe_load_all(
         open(os.path.join(dirname, filename), 'rb')):
         block = _getBlock(doc, blocks)
         registerUpgrader(block)
